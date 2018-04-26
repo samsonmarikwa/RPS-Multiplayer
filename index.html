@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Rock Paper Scissors Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/style.css" />
+    <script src="assets/javascript/app.js"></script>
+
+</head>
+
+<body>
+    <div class="jumbotron">
+        <div class="container">
+            <h1 class="jumbo-hdr">Rock Paper Scissors Game</h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                <p class="player-identity">Hi <span id="player-greeting">Pravan! You are player 1</span></p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <p id="player-info">Waiting for another player to join.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="player1">
+                    <p class="player">Player 1</p>
+                    <ul>
+                        <li><a href="#">Rock</a></li>
+                        <li><a href="#">Paper</a></li>
+                        <li><a href="#">Scissors</a></li>
+                    </ul>
+                    <p>Wins: <span id="win">0</span> Losses: <span id="losses">0</span></p>
+                </div>
+            </div>
+
+            <div class="col-sm-4">
+                <div id="game-result">Player 1 Wins!</div>
+            </div>
+
+            <div class="col-sm-4">
+                <div class="player2">
+                    <p class="player">Player 2</p>
+                    <ul>
+                        <li><a href="#">Rock</a></li>
+                        <li><a href="#">Paper</a></li>
+                        <li><a href="#">Scissors</a></li>
+                    </ul>
+                    <p>Wins: <span id="win">0</span> Losses: <span id="losses">0</span></p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="chat-display"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="chat-message">
+                        <div id="chat-message">
+                        </div>
+                        <div class="send-button">
+                            <button type="button" class="btn">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="footer">
+        <div class="col-sm-12">
+            <p class="copyright">&#169Copyright 2018 Samson Marikwa</p>
+        </div>
+    </div>
+</body>
+
+</html>
+
+<!-- 
+
+
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Rock Paper Scissors Part 7</title>
+</head>
+
+<body>
+
+    <div id="game">
+        <p>Press r, p or s to start playing!</p>
+    </div>
+
+
+
+
+    <script type="text/javascript">
+        // Creates an array that lists out all of the options (Rock, Paper, or Scissors).
+        var computerChoices = ["r", "p", "s"];
+
+        // Creating variables to hold the number of wins, losses, and ties. They start at 0.
+        var wins = 0;
+        var losses = 0;
+        var ties = 0;
+
+        // This function is run whenever the user presses a key.
+        document.onkeyup = function(event) {
+
+            // Determines which key was pressed.
+            var userGuess = event.key;
+
+            // Randomly chooses a choice from the options array. This is the Computer's guess.
+            var computerGuess = computerChoices[Math.floor(Math.random() * computerChoices.length)];
+
+            // Reworked our code from last step to use "else if" instead of lots of if statements.
+
+            // This logic determines the outcome of the game (win/loss/tie), and increments the appropriate number
+            if ((userGuess === "r") || (userGuess === "p") || (userGuess === "s")) {
+
+                if ((userGuess === "r") && (computerGuess === "s")) {
+                    wins++;
+                } else if ((userGuess === "r") && (computerGuess === "p")) {
+                    losses++;
+                } else if ((userGuess === "s") && (computerGuess === "r")) {
+                    losses++;
+                } else if ((userGuess === "s") && (computerGuess === "p")) {
+                    wins++;
+                } else if ((userGuess === "p") && (computerGuess === "r")) {
+                    wins++;
+                } else if ((userGuess === "p") && (computerGuess === "s")) {
+                    losses++;
+                } else if (userGuess === computerGuess) {
+                    ties++;
+                }
+
+                // Creating a variable to hold our new HTML. Our HTML now keeps track of the user and computer guesses, and wins/losses/ties.
+                var html =
+                    "<p>You chose: " + userGuess + "</p>" +
+                    "<p>The computer chose: " + computerGuess + "</p>" +
+                    "<p>wins: " + wins + "</p>" +
+                    "<p>losses: " + losses + "</p>" +
+                    "<p>ties: " + ties + "</p>";
+
+                // Set the inner HTML contents of the #game div to our html string
+                document.querySelector("#game").innerHTML = html;
+            }
+        };
+    </script>
+
+</body>
+
+</html> -->

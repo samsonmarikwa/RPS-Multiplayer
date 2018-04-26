@@ -1,0 +1,144 @@
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 30px;
+        background-color: #b3b3b3;
+        height: 100%;
+        min-height: 100%;
+    }
+    
+    .container {
+        width: 100%;
+        padding-bottom: 5px;
+        text-align: center;
+    }
+    
+    .jumbotron {
+        height: 15%;
+        padding-top: 15px;
+        padding-left: 5px;
+        padding-right: 5px;
+        padding-bottom: 10px;
+        background-color: #5c8a8a;
+    }
+    
+    .jumbo-hdr {
+        margin: 0px auto;
+        height: 12%;
+        font-size: 18px;
+    }
+    
+    .container-fluid {
+        margin-left: 50px;
+        margin-right: 50px;
+        padding-bottom: 5px;
+        text-align: center;
+    }
+    
+    #footer {
+        position: fixed;
+        font-size: 16px;
+        text-align: center;
+        padding: 10px;
+        bottom: 0;
+        width: 105%;
+        height: 40px;
+        background-color: #5c8a8a;
+    }
+    
+    .player-identity {
+        margin: 0px auto;
+        height: 12%;
+        font-weight: 600;
+    }
+    
+    #player-info {
+        margin: 0px auto;
+        height: 12%;
+        color: #5c8a8a;
+        font-weight: 700;
+    }
+    
+    #game-result {
+        font-size: 50px;
+        font-weight: 800;
+        line-height: 240%;
+    }
+    
+    .player {
+        background: #5c8a8a;
+    }
+    
+    .player1,
+    .player2,
+    #game-result {
+        border: 1px solid #5c8a8a;
+    }
+    
+    #chat-display {
+        margin: 40px auto;
+        margin-bottom: 2px;
+        height: 150px;
+        width: 70%;
+        background: #ffffff;
+    }
+    
+    .chat-message {
+        margin: 40px auto;
+        margin-top: 2px;
+        height: 50px;
+        width: 70%;
+    }
+    
+    #chat-message {
+        float: left;
+        margin: 40px auto;
+        margin-top: 2px;
+        height: 50px;
+        width: 90%;
+        background: #ffffff;
+    }
+    
+    .send-button {
+        float: right;
+        margin: 40px auto;
+        margin-top: 2px;
+        height: 60px;
+        width: 10%;
+    }
+    
+    .btn {
+        margin: 5px;
+        height: 40px;
+        width: 70px;
+        border-color: #5c8a8a;
+        background-color: #5c8a8a;
+        color: #ffffff;
+    }
+    
+    ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    a:link {
+        padding: 10x 10px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        width: 190px;
+        margin-top: 2px;
+        margin-bottom: 2px;
+        background-color: #85adad;
+    }
+    
+    a:hover,
+    a:active {
+        background-color: #5c8a8a;
+        color: #ffffff;
+    }
+    
+    .row {
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
