@@ -95,16 +95,16 @@ $(document).ready(function() {
                 player2Name: "Player 2",
                 playerInfo: "Waiting for another player to join.",
                 greeting: "Hi Player 2: ",
-                playerRun: playerRun,
+                playerRun: 1,
                 player1Wins: 0,
                 player1Loss: 0
             });
 
             var playerInfo = firebase.database().ref();
             playerInfo.on("value", function(info) {
+                playerRun = info.val().playerRun;
                 document.getElementById("player-info").innerHTML = info.val().playerInfo;
-                paragraph = document.getElementById("player1");
-                paragraph.innerHTML = "<strong>" + players.player1.name + "</strong>";
+                document.getElementById("player1").innerHTML = "<strong>" + players.player1.name + "</strong>";
 
             });
 
@@ -116,13 +116,14 @@ $(document).ready(function() {
                 checkWinner: false,
                 whoIsPlaying: "player1",
                 playerInfo: players.player1.name + "'s turn to select Rock, Paper or Scissors",
-                playerRun: playerRun,
+                playerRun: 2,
                 player2Wins: 0,
                 player2Loss: 0
             });
 
             var playerInfo = firebase.database().ref();
             playerInfo.on("value", function(info) {
+                playerRun = info.val().playerRun;
                 document.getElementById("player-info").innerHTML = info.val().playerInfo;
                 // display player names in the respective columns
                 document.getElementById("player1").innerHTML = "<strong>" + info.val().player1Name + "</strong>";
@@ -131,7 +132,6 @@ $(document).ready(function() {
                 document.getElementById("player1Div").style.borderColor = "#ff00ff";
                 document.getElementById("player2Div").style.borderColor = "#5c8a8a";
             });
-
 
         }
 
@@ -169,17 +169,20 @@ $(document).ready(function() {
 
     // update player's choice on firebase
     function updatePlayerChoice(playerId, choice) {
+        ++playerRun;
         if (playerId === "player1") {
             database.ref().update({
                 player1Choice: choice,
                 whoIsPlaying: "player2",
-                checkWinner: false
+                checkWinner: false,
+                playerRun: playerRun
             });
         } else if (playerId === "player2") {
             database.ref().update({
                 player2Choice: choice,
                 whoIsPlaying: "player1",
-                checkWinner: true
+                checkWinner: true,
+                playerRun: playerRun
             });
         }
 
@@ -199,14 +202,6 @@ $(document).ready(function() {
     }
 
     function checkWinner(pL1Choice, pL2Choice, player1Wins, player1Loss, player2Wins, player2Loss) {
-        console.log("Checking Winner");
-        console.log("Player 1 choice: " + pL1Choice);
-        console.log("Player 2 choice: " + pL2Choice);
-        console.log("player1Wins: " + player1Wins);
-        console.log("player1Loss: " + player1Loss);
-        console.log("player2Wins: " + player2Wins);
-        console.log("player2Loss: " + player2Loss);
-
 
         // Determine outcome of the game (win/loss) and increments the appropriate number
         if ((pL1Choice === "R") && (pL2Choice === "S")) {
@@ -296,17 +291,30 @@ $(document).ready(function() {
     // When changes occurs it will print them to console and html
     database.ref().on("value", function(snapshot) {
 
+        switchUser = snapshot.val().switchUser;
+        playerRun = snapshot.val().playerRun;
 
-
-        // Print the initial data to the console.
-        console.log(snapshot.val());
-        console.log("checkWinnerFl = " + snapshot.val().checkWinner);
-        console.log("Who is playing: " + snapshot.val().whoIsPlaying);
-        if (playerRun++ > 0) {
-            // display the player names here
+        console.log("Global variable playerRun: " + playerRun);
+        if (switchUser == 1) {
+            document.getElementById("player1").innerHTML = "<strong>" + snapshot.val().player1Name + "</strong>";
         }
 
-        switchUser = snapshot.val().switchUser;
+        if (playerRun == 2) {
+            document.getElementById("player2").innerHTML = "<strong>" + snapshot.val().player2Name + "</strong>";
+            document.getElementById("player-info").innerHTML = snapshot.val().player1Name + "'s turn to play";
+            document.getElementById("player1Div").style.borderColor = "#ff00ff";
+            document.getElementById("player2Div").style.borderColor = "#5c8a8a";
+        }
+
+        if (playerRun == 3) {
+            // document.getElementById("player2").innerHTML = "<strong>" + snapshot.val().player2Name + "</strong>";
+            console.log("Entered condition what the hell is happening here");
+            console.log("For some reason the code in this condition is not executing on the second player's screen");
+            console.log("The console logs shows on both pages - so I give up");
+            document.getElementById("player-info").innerHTML = snapshot.val().player2Name + "'s turn to play";
+            document.getElementById("player2Div").style.borderColor = "#ff00ff";
+            document.getElementById("player1Div").style.borderColor = "#5c8a8a";
+        }
 
         players.player1.name = snapshot.val().player1Name;
         players.player1.active = snapshot.val().player1Active;
@@ -319,31 +327,6 @@ $(document).ready(function() {
         players.player2.loss = snapshot.val().loss;
 
         greeting = snapshot.val().greeting;
-
-        // Log the value of the various properties
-        console.log("Snapshot player 1 " + snapshot.val().player1Name);
-        console.log("Snapshot player 2 " + snapshot.val().player2Name);
-
-        // display player instruction
-        // document.getElementById("player-info").innerHTML = playerInfo;
-
-        // // display player names in the respective columns
-        // var paragraph = document.getElementById("player1");
-        // paragraph.innerHTML = "<strong>" + players.player1.name + "</strong>";
-        // paragraph = document.getElementById("player2");
-        // paragraph.innerHTML = "<strong>" + players.player2.name + "</strong>";
-
-
-
-        if (switchUser == 0 && snapshot.val().playerRun == 0) {;
-        }
-
-        if (switchUser == 0 && snapshot.val().playerRun == 1) {
-
-        }
-        if (switchUser == 0 && snapshot.val().playerRun == 2) {
-
-        }
 
         if (snapshot.val().checkWinner) {
             var pl1C = snapshot.val().player1Choice;
