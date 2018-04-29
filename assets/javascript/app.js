@@ -1,279 +1,330 @@
 $(document).ready(function() {
-    //declare variables
-    var randomNum; // pick random questions from questions array
-    var correctAnsCnt; // count correct answers
-    var incorrectAnsCnt; // count incorrect answers
-    var unAnsQuestionCnt; // count unanswered questions
-    var choice; // record the answer index number selected by the user
-    var intervalId; // interval id from setInterval
-    var secondsElapsed; // seconds elapsed counter
 
-    // init variables
-    correctAnsCnt = 0;
-    incorrectAnsCnt = 0;
-    unAnsQuestionCnt = 0;
-    intervalId = 0;
-    secondsElapsed = 0;
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyAlQKYKtWoCE67LWcNHH8ih9tqUeffZM8c",
+        authDomain: "rockpaperscissors-2bc08.firebaseapp.com",
+        databaseURL: "https://rockpaperscissors-2bc08.firebaseio.com",
+        projectId: "rockpaperscissors-2bc08",
+        storageBucket: "",
+        messagingSenderId: "786215929145"
+    };
+    firebase.initializeApp(config);
 
-    // declare questions array
-    var questions = [];
+    // Create a variable to reference the database.
+    var database = firebase.database();
 
-    // declare two dimensional array for answers. Each question has 4 multiple choices.
-    var answers = [];
+    // create objects for the players
+    var players = {
+        connectedUsers: 0,
+        whoIsPlaying: "player1",
+        winner: "",
+        player1: {
+            name: "",
+            active: true,
+            won: 0,
+            loss: 0,
+        },
+        player2: {
+            name: "",
+            active: false,
+            won: 0,
+            loss: 0,
+        }
+    }
 
-    // declare array with correct answers index numbers to the answers array
-    var CorrectChoice = [];
+    var gameOn = true;
+    var switchUser = 0;
+    var playerRun = 0;
+    var playerInfo = "";
+    var greeting = "";
+    var player1Name = "";
+    var player2Name = "";
 
-    // declare array with image sources of the correct answers
-    var Images = [];
+
+    // create player elements and display on ui
+    function createPlayerElements() {
+
+        if (switchUser == 0) {
+            greeting = "Hi Player 1: ";
+            playerInfo = "Please enter your name and click Start.";
+        } else if (switchUser == 1) {
+            greeting = "Hi Player 2: ";
+            playerInfo = "Please enter your name and click Start.";
+        }
+
+        var paragraph = document.getElementById("player-identity");
+
+        // greet player
+        document.getElementById("player-identity").innerHTML = greeting;
+
+        // create textbox
+        var playerInp = document.createElement("INPUT");
+        playerInp.setAttribute("type", "text");
+        playerInp.setAttribute("value", "");
+        playerInp.setAttribute("id", "playerName");
+        paragraph.appendChild(playerInp);
+
+        //create start button
+        var startBtn = document.createElement("INPUT");
+        startBtn.setAttribute("type", "button");
+        startBtn.setAttribute("value", "   Start   ");
+        startBtn.setAttribute("id", "startBtn");
+        paragraph.appendChild(startBtn);
+        document.getElementById("startBtn").setAttribute("class", "btn");
+
+        // player instructions
+        document.getElementById("player-info").innerHTML = playerInfo;
+
+        // add event listener for the start button for player1
+        document.getElementById("startBtn").addEventListener("click", getPlayer);
+    }
 
 
-    /*
-     * The function allows the user to select an answer from a ul. The answer will be check
-     * if its correct and a feedback function is called with a parameter. A respective counter
-     * is accumulated. The function calls start so the next question is prepared.
-     */
-    function selectAnswer() {
+    function getPlayer() {
 
-        // set choice to index number of the clicked li element
-        choice = $(this).index();
+        document.getElementById("player-info").innerHTML = "Waiting for another player to join.";
 
-        // check if the answer is correct
-        if (choice === CorrectChoice[randomNum]) {
-            correctAnsCnt++; // increment correct answers counter 
+        // update player name
+        if (switchUser == 0) {
+            player1Name = document.getElementById("playerName").value;
+        } else if (switchUser == 1) {
+            player2Name = document.getElementById("playerName").value;
+        }
 
-            displayFeedback("CORRECT"); // display feedback on correct answer
-
+        // update firebase player 1 details
+        if (switchUser == 0) {
+            players.player1.name = playerName;
+            playerInfo = "Waiting for another player to join.";
+            database.ref().set({
+                switchUser: 1,
+                player1Name: player1Name,
+                player1Choice: "",
+                checkWinnerFl: false,
+                whoIsPlaying: "none",
+                winner: "",
+                player2Name: "Player 2",
+                playerInfo: playerInfo,
+                greeting: "Hi Player 2: ",
+                playerRun: playerRun
+            });
         } else {
-
-            displayFeedback("INCORRECT");
-
-            incorrectAnsCnt++; // increment incorrect answers counter
+            playerInfo = "Player1's turn to select Rock, Paper or Scissors";
+            database.ref().update({
+                switchUser: 0,
+                player2Name: player2Name,
+                player2Choice: "",
+                checkWinnerFl: false,
+                whoIsPlaying: "player1",
+                playerInfo: playerInfo,
+                playerRun
+            });
         }
 
-        // since a selection has been made, no need to wait for the counter hence disrupting
-        // it to enable the system to ask the next question immediately within the start function
-        secondsElapsed = -5;
+        // remove typed name in textbox
+        document.getElementById("playerName").value = "";
 
-        start();
-    }
+        // display player instruction
+        document.getElementById("player-info").innerHTML = playerInfo;
 
-    /*
-     * Retrieves the correct answer from the answers array using the random number which
-     * was used to pull out the question.
-     */
-    function getAnswer(num) {
-        return answers[num][CorrectChoice[num]];
-    }
-
-    /*
-     * Retrieves the image matching the answer using the random number which
-     * was used to pull out the question.
-     */
-    function getImage(num) {
-        return Images[num];
-    }
-
-    /*
-     * function sets up the wait time which is five seconds for the user to select the
-     * correct answer. The secondsElapsed is decremented by one. If the user does not
-     * select a choice, a feedback message is given and the system goes to the start
-     * function to prepare another question.
-     */
-    function waitUserChoice() {
-        if (secondsElapsed === -5) {
-            secondsElapsed = 11;
-            getQuestion();
-        }
-
-        // show time left
-        secondsElapsed--; //  decrement counter
-        $("#seconds-elapsed").html("<strong>" + secondsElapsed + " seconds</strong>");
-
-        if (secondsElapsed < 0) {
-            unAnsQuestionCnt++;
-
-            displayFeedback("TIMEOUT")
-
-            secondsElapsed = -5; // disrupt counter so as to ask next question immedately
-
-            start();
-        }
+        // display player names in the respective columns
+        var paragraph = document.getElementById("player1");
+        paragraph.innerHTML = "<strong>" + players.player1.name + "</strong>";
+        paragraph = document.getElementById("player2");
+        paragraph.innerHTML = "<strong>" + players.player2.name + "</strong>";
 
     }
 
-    /*
-     * function display feedback on the answer selected or when the user does not
-     * respond in time to the question.
-     */
-    function displayFeedback(fdbk) {
+    function checkWinner(pL1Choice, pL2Choice, player1Wins, player1Loss, player2Wins, player2Loss) {
+        console.log("Checking Winner");
 
-        // hide answers-div
-        $(".answers-div").css("display", "none");
+        // Determine outcome of the game (win/loss) and increments the appropriate number
+        if ((pL1Choice === "R") || (pL1Choice === "P") || (pL1Choice === "S")) {
 
-        // display feedback div
-        $(".feedback-div").css("display", "block");
-        $("#seconds-elapsed").html("<strong>" + secondsElapsed + " seconds</strong>");
+            if ((pL1Choice === "R") && (pL2Choice === "S")) {
 
-        if (fdbk === "TIMEOUT") {
-            $("#feedback1").html("<h2><strong>Out of Time !!!</strong></h2>");
+                database.ref().update({
+                    winner: "Player 1 Won",
+                    player1Wins: ++player1Wins,
+                    player2Loss: ++player2Loss
+                });
 
-            //display correct answer
-            $("#feedback2").html("<h2><strong>The correct answer was: " + getAnswer(randomNum) + " </strong></h2>");
-        } else if (fdbk === "CORRECT") {
-            $("#feedback1").html("<h2>Correct!!!</h2>");
-            $("#feedback2").html("");
-        } else {
+            } else if ((pL1Choice === "R") && (pL2Choice === "P")) {
 
-            $("#feedback1").html("<h2><strong>Nope!!!</strong></h2>");
+                database.ref().update({
+                    winner: "Player 2 Won",
+                    player2Wins: ++player2Wins,
+                    player1Loss: ++player1Loss
+                });
 
-            //display correct answer
-            $("#feedback2").html("<h2><strong>The correct answer was: " + getAnswer(randomNum) + " </strong></h2>");
-        }
-        //display image
-        $("#image").html("<img src='" + getImage(randomNum) + "' height='280' width='350'>");
+            } else if ((pL1Choice === "S") && (pL2Choice === "R")) {
 
-        // a processed question should be deleted from the questions array
-        deleteQuestion(randomNum);
+                database.ref().update({
+                    winner: "Player 2 Won",
+                    player2Wins: ++player2Wins,
+                    player1Loss: ++player1Loss
+                });
 
-    }
+            } else if ((pL1Choice === "S") && (pL2Choice === "P")) {
 
-    /*
-     * Delete an asked question from the questions array and all related elements from the
-     * other arrays. An empty question array is tested to stop the timer and prompt a restart
-     * within the getQuestion function.
-     */
-    function deleteQuestion(num) {
+                database.ref().update({
+                    winner: "Player 1 Won",
+                    player1Wins: ++player1Wins,
+                    player2Loss: ++player2Loss
+                });
 
-        questions.splice(num, 1);
-        answers.splice(num, 1);
-        CorrectChoice.splice(num, 1);
-        Images.splice(num, 1);
+            } else if ((pL1Choice === "P") && (pL2Choice === "R")) {
 
-    }
+                database.ref().update({
+                    winner: "Player 1 Won",
+                    player1Wins: ++player1Wins,
+                    player2Loss: ++player2Loss
+                });
 
-    /*
-     * retrieve a question from the questions array using a random number and display multiple
-     * choice answers.
-     */
-    function getQuestion() {
+            } else if ((pL1Choice === "P") && (pL2Choice === "S")) {
 
-        // check if more questions available
-        if (questions.length > 0) {
-            // more questions available to process
+                database.ref().update({
+                    winner: "Player 2 Won",
+                    player2Wins: ++player2Wins,
+                    player1Loss: ++player1Loss
+                });
 
-            // get random number to pick up question from array
-            randomNum = Math.floor(Math.random() * questions.length);
+            } else if (pL1Choice === pL2Choice) {
 
-            // hide answers, feedback and start-over divs
-            $(".start-div").css("display", "none");
-            $(".feedback-div").css("display", "none");
-            $(".start-over-div").css("display", "none");
+                database.ref().update({
+                    winner: "You are tied"
+                });
 
-            // display answers div
-            $(".answers-div").css("display", "block");
-            $("#question").html("<h2>" + questions[randomNum] + "</h2>");
-
-            // display multiple choice answers
-            $("#answers-choice").html("<ul id='choice'>");
-            for (let answer of answers[randomNum]) {
-                $("ul").append("<li id='selection'><a href='#'>" + answer + "</a></li>");
             }
 
-        } else {
-            // no more questions. Clear interval identity and display the results
-            clearInterval(intervalId);
-            results();
+            /*      // Creating a variable to hold our new HTML. Our HTML now keeps track of the user and computer guesses, and wins/losses/ties.
+                 var html =
+                     "<p>Player 1 chose: " + pL1Choice + "</p>" +
+                     "<p>Player 2 chose: " + pL2Choice + "</p>" +
+                     "<p>wins: " + wins + "</p>" +
+                     "<p>losses: " + losses + "</p>" +
+                     "<p>ties: " + ties + "</p>";
+
+                 // Set the inner HTML contents of the #game div to our html string
+                  document.querySelector("#game").innerHTML = html;
+                  */
+        }
+
+        database.ref().update({
+            checkWinner: false
+        });
+
+    }
+
+
+    // event listeners for Player choices
+    document.getElementById("pl1R").onclick = function(event) {
+        updatePlayerChoice("player1", "R");
+    }
+
+    document.getElementById("pl1P").onclick = function(event) {
+        updatePlayerChoice("player1", "P");
+    }
+
+    document.getElementById("pl1S").onclick = function(event) {
+        updatePlayerChoice("player1", "S");
+    }
+
+    document.getElementById("pl2R").onclick = function(event) {
+        updatePlayerChoice("player2", "R");
+    }
+
+    document.getElementById("pl2P").onclick = function(event) {
+        updatePlayerChoice("player2", "P");
+    }
+
+    document.getElementById("pl2S").onclick = function(event) {
+        updatePlayerChoice("player2", "S");
+    }
+
+    // update player's choice on firebase
+    function updatePlayerChoice(playerId, choice) {
+        if (playerId === "player1") {
+            database.ref().update({
+                player1Choice: choice,
+                whoIsPlaying: "player2",
+                checkWinnerFl: false
+            });
+        } else if (playerId === "player2") {
+            database.ref().update({
+                player2Choice: choice,
+                whoIsPlaying: "player1",
+                checkWinnerFl: true
+            });
         }
     }
 
-    /*
-     * display results from the test
-     */
-    function results() {
 
-        $(".answers-div").css("display", "none");
-        $(".feedback-div").css("display", "none");
+    // Firebase is always watching for changes to the data.
+    // When changes occurs it will print them to console and html
+    database.ref().on("value", function(snapshot) {
 
-        $(".start-over-div").css("display", "block");
+        // Print the initial data to the console.
+        console.log(snapshot.val());
+        switchUser = snapshot.val().switchUser;
 
-        $("#correct").html("<strong>" + correctAnsCnt + "</strong>");
-        $("#incorrect").html("<strong>" + incorrectAnsCnt + "</strong>");
-        $("#unanswered").html("<strong>" + unAnsQuestionCnt + "</strong>");
+        players.player1.name = snapshot.val().player1Name;
+        players.player1.active = snapshot.val().player1Active;
+        players.player1.won = snapshot.val().player1Won;
+        players.player1.loss = snapshot.val().loss;
 
-    }
+        players.player2.name = snapshot.val().player2Name;
+        players.player2.active = snapshot.val().player2Active;
+        players.player2.won = snapshot.val().player2Won;
+        players.player2.loss = snapshot.val().loss;
 
-    /*
-     * executed when the Start utton is clicked. Function can also be initiated without
-     * a button click in order to pick up the next question. When the function is initiated
-     * through a button click, we ask the next question immediatedly. When initiated within
-     * the program logic, we allow the feedback from the previous question to display longer
-     */
-    function start() {
+        greeting = snapshot.val().greeting;
 
-        clearInterval(intervalId);
-        if (secondsElapsed === -5) {
-            intervalId = setInterval(waitUserChoice, 3000);
-        } else {
+        // Log the value of the various properties
+        console.log("Snapshot player 1 " + snapshot.val().player1Name);
+        console.log("Snapshot player 2 " + snapshot.val().player2Name);
 
-            secondsElapsed = 11;
+        // display player instruction
+        document.getElementById("player-info").innerHTML = playerInfo;
 
-            getQuestion();
+        // display player names in the respective columns
+        var paragraph = document.getElementById("player1");
+        paragraph.innerHTML = "<strong>" + players.player1.name + "</strong>";
+        paragraph = document.getElementById("player2");
+        paragraph.innerHTML = "<strong>" + players.player2.name + "</strong>";
 
-            intervalId = setInterval(waitUserChoice, 3000);
+        if (switchUser == 0 && snapshot.val().playerRun == 0) {;
         }
 
-    }
+        if (switchUser == 0 && snapshot.val().playerRun == 1) {
 
-    /*
-     * Put data into the arrays
-     */
-    function populateArrays() {
+        }
+        if (switchUser == 0 && snapshot.val().playerRun == 2) {
 
-        questions = ["Who is Chuck Noris?", "Who is Taylor Swift?", "What is Barack Obama known for?",
-            "What is Albert Einstein known for?", "Where is Cecil John Rhodes buried?",
-            "Which is out of place?"
-        ];
+        }
 
-        answers = [
-            ["Actor", "Singer", "Massachusets Former Governor", "Lakewood Church Pastor"],
-            ["Olympic Gold Medalist", "Tennis No.1 seed", "Singer", "US Ambassador to United Nations"],
-            ["Actor", "Inventor of Linux Operating System", "US Ambassador to United Nations",
-                "President of United States"
-            ],
-            ["Theoretical physicist", "Germany Evangelist", "German Chancellor", "Bulb Inventor"],
-            ["Zimbabwe Matopo Hills", "St George's Chapel, Windsor Castle",
-                "Andrew Johnson National Cemetery", "Queen Victoria Falls, Zimbabwe"
-            ],
-            ["North Carolina", "New York", "London", "New Jersey"]
-        ];
+        console.log("CheckWinnerFl = " + snapshot.val().checkWinnerFL);
 
-        CorrectChoice = [0, 2, 3, 0, 0, 2];
 
-        Images = ["assets/images/ChuckNorris.gif", "assets/images/Taylor.gif", "assets/images/Obama.gif", "assets/images/Albert.gif", "assets/images/Matobo.jpg", "assets/images/London.gif"];
 
-    }
+        if (snapshot.val().checkWinnerFL) {
+            var pl1C = snapshot.val().player1Choice;
+            var pl2C = snapshot.val().player2Choice;
+            var pl1W = snapshot.val().player1Wins;
+            var pl1L = snapshot.val().player1Loss;
+            var pl2W = snapshot.val().player2Wins;
+            var pl2L = snapshot.val().player2Loss;
 
-    /*
-     * executes when the restart button is clicked. variables and arrays are re-initialized.
-     * the function then calls the start function.
-     */
-    function restart() {
-        correctAnsCnt = 0;
-        incorrectAnsCnt = 0;
-        unAnsQuestionCnt = 0;
-        intervalId = 0;
-        secondsElapsed = 0;
+            checkWinner(pl1C, pl2C, pl1W, pl1L, pl2W, pl2L);
+        }
 
-        populateArrays();
+        snapshot.val().playerRun += 1;
+    }, function(errorObject) {
+        console.log("The read failed: " + errorObject.code);
+    });
 
-        start();
+    // document.getElementById("game-result").style.visibility = 'hidden';
 
-    }
-
-    populateArrays();
-    $("body").on("click", "#btn-start", start);
-    $("body").on("click", "#selection", selectAnswer);
-    $("body").on("click", "#btn-restart", restart);
+    createPlayerElements();
 
 });
