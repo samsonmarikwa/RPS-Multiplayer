@@ -65,8 +65,8 @@
         background: #5c8a8a;
     }
     
-    .player1,
-    .player2,
+    #player1Div,
+    #player2Div,
     #game-result {
         border: 1px solid #5c8a8a;
     }
