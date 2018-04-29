@@ -65,7 +65,9 @@
 
             <div class="row">
                 <div class="col-sm-12">
-                    <div id="chat-display"></div>
+                    <div id="chat-display">
+                        <textarea readonly id="message-display"></textarea>
+                    </div>
                 </div>
             </div>
 
@@ -73,9 +75,10 @@
                 <div class="col-sm-12">
                     <div class="chat-message">
                         <div id="chat-message">
+                            <textarea id="message" placeholder="Type something here to tease the other player!!"></textarea>
                         </div>
                         <div class="send-button">
-                            <button type="button" class="btn">Send</button>
+                            <button type="button" id="msg-btn" class="btn">Send</button>
                         </div>
                     </div>
                 </div>

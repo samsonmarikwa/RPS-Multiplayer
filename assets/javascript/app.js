@@ -40,6 +40,7 @@ $(document).ready(function() {
     var greeting = "";
     var player1Name = "";
     var player2Name = "";
+    var chatMessage = "";
 
 
     // create player elements and display on ui
@@ -97,7 +98,8 @@ $(document).ready(function() {
                 greeting: "Hi Player 2: ",
                 playerRun: 1,
                 player1Wins: 0,
-                player1Loss: 0
+                player1Loss: 0,
+                chatMessage: ""
             });
 
             var playerInfo = firebase.database().ref();
@@ -141,6 +143,29 @@ $(document).ready(function() {
         document.getElementById("startBtn").disabled = true;
 
     }
+
+    // event listener for chats
+    document.getElementById("msg-btn").onclick = function(event) {
+        sendMessage();
+        document.getElementById("message").innerHTML = "";
+    }
+
+    function sendMessage() {
+        var chat = firebase.database().ref();
+        chat.on("value", function(snapShot) {
+            chatMessage = snapShot.val().chatMessage;
+
+            // display message on UI
+            document.getElementById("message-display").innerHTML = chatMessage;
+            document.getElementById("message-display").scrollTop = document.getElementById("message-display").scrollHeight;
+        });
+
+        database.ref().update({
+            chatMessage: chatMessage + document.getElementById("message").value + "\n"
+        });
+
+    }
+
 
     // event listeners for Player choices
     document.getElementById("pl1R").onclick = function(event) {
