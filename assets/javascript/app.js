@@ -33,21 +33,18 @@ $(document).ready(function() {
         }
     }
 
-    var gameOn = true;
     var switchUser = 0;
     var playerRun = 0;
     var playerInfo = "";
-    var greeting = "";
     var player1Name = "";
     var player2Name = "";
     var chatMessage = "";
-
+    var chatInd = 0;
 
     // create player elements and display on ui
     function createPlayerElements() {
 
         var paragraph = document.getElementById("player-identity");
-        //document.getElementById("player-info").innerHTML = "Please enter your name and click Start";
 
         // create textbox
         var playerInp = document.createElement("INPUT");
@@ -95,17 +92,17 @@ $(document).ready(function() {
                 winner: "",
                 player2Name: "Player 2",
                 playerInfo: "Waiting for another player to join.",
-                greeting: "Hi Player 2: ",
                 playerRun: 1,
                 player1Wins: 0,
                 player1Loss: 0,
+                chatInd: 1,
                 chatMessage: ""
             });
 
+            document.getElementById("player-info").innerHTML = "Waiting for another player to join";
+
             var playerInfo = firebase.database().ref();
             playerInfo.on("value", function(info) {
-                playerRun = info.val().playerRun;
-                document.getElementById("player-info").innerHTML = info.val().playerInfo;
                 document.getElementById("player1").innerHTML = "<strong>" + players.player1.name + "</strong>";
 
             });
@@ -125,14 +122,10 @@ $(document).ready(function() {
 
             var playerInfo = firebase.database().ref();
             playerInfo.on("value", function(info) {
-                playerRun = info.val().playerRun;
-                document.getElementById("player-info").innerHTML = info.val().playerInfo;
                 // display player names in the respective columns
                 document.getElementById("player1").innerHTML = "<strong>" + info.val().player1Name + "</strong>";
                 document.getElementById("player2").innerHTML = "<strong>" + info.val().player2Name + "</strong>";
 
-                document.getElementById("player1Div").style.borderColor = "#ff00ff";
-                document.getElementById("player2Div").style.borderColor = "#5c8a8a";
             });
 
         }
@@ -194,15 +187,17 @@ $(document).ready(function() {
 
     // update player's choice on firebase
     function updatePlayerChoice(playerId, choice) {
-        ++playerRun;
-        if (playerId === "player1") {
+
+        if (playerId == "player1") {
             database.ref().update({
                 player1Choice: choice,
                 whoIsPlaying: "player2",
                 checkWinner: false,
                 playerRun: playerRun
             });
-        } else if (playerId === "player2") {
+        }
+
+        if (playerId == "player2") {
             database.ref().update({
                 player2Choice: choice,
                 whoIsPlaying: "player1",
@@ -213,15 +208,18 @@ $(document).ready(function() {
 
         var whoPlays = firebase.database().ref();
         whoPlays.on("value", function(whoPlays) {
-            if (whoPlays.val().whoIsPlaying == "player1") {
+
+            if (whoPlays.val().whoIsPlaying == 'player1') {
                 document.getElementById("player-info").innerHTML = whoPlays.val().player1Name + "'s turn to play";
                 document.getElementById("player1Div").style.borderColor = "#ff00ff";
                 document.getElementById("player2Div").style.borderColor = "#5c8a8a";
-            } else if (whoPlays.val().whoIsPlaying == "player2") {
+
+            } else if (whoPlays.val().whoIsPlaying == 'player2') {
                 document.getElementById("player-info").innerHTML = whoPlays.val().player2Name + "'s turn to play";
                 document.getElementById("player2Div").style.borderColor = "#ff00ff";
                 document.getElementById("player1Div").style.borderColor = "#5c8a8a";
             }
+
         });
 
     }
@@ -317,42 +315,40 @@ $(document).ready(function() {
     database.ref().on("value", function(snapshot) {
 
         switchUser = snapshot.val().switchUser;
-        playerRun = snapshot.val().playerRun;
 
-        console.log("Global variable playerRun: " + playerRun);
+        // switchUser ensures we do not display the users in the previous session before they are re-initialized
         if (switchUser == 1) {
             document.getElementById("player1").innerHTML = "<strong>" + snapshot.val().player1Name + "</strong>";
         }
 
-        if (playerRun == 2) {
+        if (snapshot.val().playerRun == 2) {
             document.getElementById("player2").innerHTML = "<strong>" + snapshot.val().player2Name + "</strong>";
             document.getElementById("player-info").innerHTML = snapshot.val().player1Name + "'s turn to play";
             document.getElementById("player1Div").style.borderColor = "#ff00ff";
             document.getElementById("player2Div").style.borderColor = "#5c8a8a";
         }
 
-        if (playerRun == 3) {
-            // document.getElementById("player2").innerHTML = "<strong>" + snapshot.val().player2Name + "</strong>";
-            console.log("Entered condition what the hell is happening here");
-            console.log("For some reason the code in this condition is not executing on the second player's screen");
-            console.log("The console logs shows on both pages - so I give up");
+        if (snapshot.val().playerRun == 3) {
             document.getElementById("player-info").innerHTML = snapshot.val().player2Name + "'s turn to play";
             document.getElementById("player2Div").style.borderColor = "#ff00ff";
             document.getElementById("player1Div").style.borderColor = "#5c8a8a";
         }
 
+        ++playerRun;
+
+        if (chatInd == 1) {
+            // display message on UI
+            document.getElementById("message-display").innerHTML = snapshot.val().chatMessage;
+            document.getElementById("message-display").scrollTop = document.getElementById("message-display").scrollHeight;
+        }
+
+        // enable chat message display after clearing chat messages from previous sessions
+        chatInd = snapshot.val().chatInd;
+
         players.player1.name = snapshot.val().player1Name;
-        players.player1.active = snapshot.val().player1Active;
-        players.player1.won = snapshot.val().player1Won;
-        players.player1.loss = snapshot.val().loss;
-
         players.player2.name = snapshot.val().player2Name;
-        players.player2.active = snapshot.val().player2Active;
-        players.player2.won = snapshot.val().player2Won;
-        players.player2.loss = snapshot.val().loss;
 
-        greeting = snapshot.val().greeting;
-
+        // The second player sets the check winner flag to true so we can check who won between the two players
         if (snapshot.val().checkWinner) {
             var pl1C = snapshot.val().player1Choice;
             var pl2C = snapshot.val().player2Choice;
@@ -364,12 +360,9 @@ $(document).ready(function() {
             checkWinner(pl1C, pl2C, pl1W, pl1L, pl2W, pl2L);
         }
 
-        snapshot.val().playerRun += 1;
     }, function(errorObject) {
         console.log("The read failed: " + errorObject.code);
     });
-
-    // document.getElementById("game-result").style.visibility = 'hidden';
 
     createPlayerElements();
 
