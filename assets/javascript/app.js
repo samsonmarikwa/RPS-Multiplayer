@@ -154,11 +154,10 @@ $(document).ready(function() {
         });
 
         database.ref().update({
-            chatMessage: chatMessage + document.getElementById("message").value + "\n"
+            chatMessage: chatMessage + player1Name + player2Name + " says:\n" + document.getElementById("message").value + "\n"
         });
 
     }
-
 
     // event listeners for Player choices
     document.getElementById("pl1R").onclick = function(event) {
