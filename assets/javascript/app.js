@@ -2,12 +2,12 @@ $(document).ready(function() {
 
     // Initialize Firebase
     var config = {
-        apiKey: "AIzaSyAlQKYKtWoCE67LWcNHH8ih9tqUeffZM8c",
-        authDomain: "rockpaperscissors-2bc08.firebaseapp.com",
-        databaseURL: "https://rockpaperscissors-2bc08.firebaseio.com",
-        projectId: "rockpaperscissors-2bc08",
+        apiKey: "",
+        authDomain: "",
+        databaseURL: "",
+        projectId: "",
         storageBucket: "",
-        messagingSenderId: "786215929145"
+        messagingSenderId: ""
     };
     firebase.initializeApp(config);
 
