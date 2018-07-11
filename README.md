@@ -5,7 +5,7 @@ The RPS-Multiplayer is a Rock, Paper, Scissors game that is played over the inte
 
 ## Application access
 
-The RPS-Multiplayer game can be accessed on [Heroku](https://serene-forest-57972.herokuapp.com) on the Portfolio link.
+The RPS-Multiplayer game can be accessed on [Heroku](https://serene-forest-57972.herokuapp.com) on the Portfolio link. You will need to open another tab in the browser to simulate two players playing the game or you can ask a friend to play against you.
 
 
 ## Setup
